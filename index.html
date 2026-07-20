@@ -3,36 +3,1608 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello World</title>
+  <meta name="theme-color" content="#08090f">
+  <title>帷幕对决</title>
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07080d;
+      --panel: rgba(14, 15, 24, 0.86);
+      --line: rgba(215, 212, 195, 0.16);
+      --text: #ebe9df;
+      --muted: #8e8d88;
+      --gold: #c6a76a;
+      --gold-bright: #efd69d;
+      --red: #9e3445;
+      --energy: #6491b8;
+      --creation: #9a73bd;
+      --stamina: #7e9f71;
+    }
+
     * {
       box-sizing: border-box;
     }
 
+    html,
     body {
-      min-height: 100vh;
-      margin: 0;
-      display: grid;
-      place-items: center;
-      font-family: Arial, sans-serif;
-      color: #ffffff;
-      background: linear-gradient(135deg, #6d5dfc, #36c5f0);
+      min-height: 100%;
     }
 
-    h1 {
+    body {
       margin: 0;
-      padding: 32px 48px;
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.14);
-      box-shadow: 0 20px 50px rgba(26, 30, 72, 0.25);
-      backdrop-filter: blur(12px);
-      font-size: clamp(3rem, 10vw, 7rem);
-      letter-spacing: -0.05em;
+      overflow-x: hidden;
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 16%, rgba(91, 75, 122, 0.16), transparent 26rem),
+        radial-gradient(circle at 18% 58%, rgba(40, 68, 75, 0.11), transparent 28rem),
+        linear-gradient(160deg, #090a11 0%, #05060a 56%, #0b0910 100%);
+    }
+
+    body::before,
+    body::after {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      content: "";
+    }
+
+    body::before {
+      opacity: 0.34;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,.5) 0 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(198,167,106,.28) 0 1px, transparent 1.5px);
+      background-position: 1rem 2rem, 4rem 5rem;
+      background-size: 7rem 7rem, 11rem 11rem;
+      mask-image: linear-gradient(to bottom, #000, transparent 75%);
+    }
+
+    body::after {
+      z-index: -1;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.025), transparent);
+      transform: translateX(-60%) skewX(-14deg);
+      animation: wandering-light 14s ease-in-out infinite alternate;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .game-shell {
+      width: min(1440px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px clamp(18px, 4vw, 60px) 34px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      min-height: 62px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: start;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.34em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .title-block {
+      text-align: center;
+    }
+
+    .title-block h1 {
+      margin: -4px 0 3px;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      color: #f1eee3;
+      text-shadow: 0 0 30px rgba(229, 202, 144, 0.18);
+    }
+
+    .title-block p,
+    .round-label {
+      margin: 0;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+
+    .round-label {
+      justify-self: end;
+      text-align: right;
+    }
+
+    .round-label strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--gold-bright);
+    }
+
+    .arena {
+      position: relative;
+      flex: 1;
+      min-height: 420px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(170px, 0.42fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      padding: clamp(26px, 4vh, 54px) 0;
+    }
+
+    .arena::before {
+      position: absolute;
+      left: 50%;
+      bottom: 3%;
+      width: min(68vw, 850px);
+      height: 24%;
+      border: 1px solid rgba(198, 167, 106, 0.1);
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(161, 137, 100, .08), transparent 62%);
+      transform: translateX(-50%) perspective(250px) rotateX(62deg);
+      filter: blur(0.2px);
+      content: "";
+    }
+
+    .combatant {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+      border: 0;
+      color: inherit;
+      background: transparent;
+      cursor: pointer;
+      isolation: isolate;
+    }
+
+    .combatant:focus-visible {
+      outline: 1px solid var(--gold-bright);
+      outline-offset: 8px;
+      border-radius: 8px;
+    }
+
+    .combatant[disabled] {
+      cursor: default;
+    }
+
+    .identity {
+      width: min(340px, 100%);
+      margin: 0 auto 24px;
+      text-align: left;
+    }
+
+    .combatant.right .identity {
+      text-align: right;
+    }
+
+    .name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 9px;
+    }
+
+    .right .name-row {
+      flex-direction: row-reverse;
+    }
+
+    .name {
+      font-family: Georgia, "Songti SC", serif;
+      font-size: clamp(1rem, 1.8vw, 1.3rem);
+      font-weight: 400;
+      letter-spacing: 0.2em;
+    }
+
+    .health-number {
+      font-family: Georgia, serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: #d4c9c0;
+    }
+
+    .health-track,
+    .resource-track {
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.07);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+
+    .health-track {
+      height: 7px;
+    }
+
+    .health-fill {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #6f1d2e, #b64d59);
+      box-shadow: 0 0 15px rgba(182, 77, 89, .4);
+    }
+
+    .right .health-fill {
+      margin-left: auto;
+      background: linear-gradient(90deg, #b64d59, #6f1d2e);
+    }
+
+    .portrait {
+      position: relative;
+      width: min(250px, 70%);
+      aspect-ratio: 0.8;
+      margin: 0 auto;
+      transition: transform .55s ease, filter .55s ease;
+    }
+
+    .portrait::before,
+    .portrait::after {
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      content: "";
+    }
+
+    .portrait::before {
+      z-index: -2;
+      width: 114%;
+      aspect-ratio: 1;
+      border: 1px solid rgba(198, 167, 106, .16);
+      box-shadow: inset 0 0 50px rgba(105, 79, 130, .06), 0 0 50px rgba(0,0,0,.35);
+    }
+
+    .portrait::after {
+      z-index: -1;
+      width: 90%;
+      aspect-ratio: 1;
+      background: radial-gradient(circle, rgba(103, 87, 127, .18), transparent 68%);
+      filter: blur(8px);
+    }
+
+    .sigil-ring {
+      position: absolute;
+      inset: 5%;
+      z-index: -1;
+      border: 1px dashed rgba(198, 167, 106, .14);
+      border-radius: 50%;
+      animation: slow-turn 36s linear infinite;
+    }
+
+    .figure {
+      position: absolute;
+      inset: 3% 13% 0;
+      transform: rotate(2deg);
+      transform-origin: 50% 92%;
+      filter: drop-shadow(0 18px 18px rgba(0,0,0,.56));
+    }
+
+    .right .figure {
+      transform: scaleX(-1) rotate(2deg);
+      filter: hue-rotate(28deg) drop-shadow(0 18px 18px rgba(0,0,0,.56));
+    }
+
+    .head {
+      position: absolute;
+      z-index: 6;
+      top: 3%;
+      left: 54%;
+      width: 27%;
+      height: 20%;
+      border: 1px solid rgba(231, 228, 215, .22);
+      border-radius: 52% 58% 45% 48%;
+      background: linear-gradient(115deg, #42434b, #1a1b22 72%);
+      transform: translateX(-50%) rotate(-2deg);
+      box-shadow: inset -11px -8px 22px rgba(0,0,0,.38), 0 0 28px rgba(105,90,130,.14);
+    }
+
+    .head::before {
+      position: absolute;
+      z-index: -1;
+      right: -14%;
+      top: 38%;
+      width: 27%;
+      height: 22%;
+      border-top: 1px solid rgba(231, 228, 215, .24);
+      border-right: 1px solid rgba(231, 228, 215, .2);
+      border-radius: 10% 70% 55% 15%;
+      background: #24252d;
+      transform: rotate(11deg) skewX(-12deg);
+      content: "";
+    }
+
+    .head::after {
+      position: absolute;
+      right: 10%;
+      top: 38%;
+      width: 18%;
+      height: 2px;
+      border-radius: 50%;
+      background: rgba(242, 214, 151, .92);
+      box-shadow: 0 0 5px rgba(242, 214, 151, .9), 0 0 13px rgba(198, 167, 106, .58);
+      content: "";
+    }
+
+    .neck {
+      position: absolute;
+      z-index: 3;
+      top: 20%;
+      left: 48%;
+      width: 14%;
+      height: 13%;
+      border-radius: 32% 24% 20% 30%;
+      background: linear-gradient(90deg, #202129, #3b3c45 54%, #171820);
+      transform: rotate(7deg);
+    }
+
+    .torso {
+      position: absolute;
+      z-index: 2;
+      top: 27%;
+      left: 48%;
+      width: 43%;
+      height: 40%;
+      border: 1px solid rgba(231, 228, 215, .09);
+      border-radius: 47% 30% 22% 30% / 21% 28% 68% 65%;
+      background: linear-gradient(112deg, #353640, #121319 74%);
+      transform: translateX(-50%) skewX(-3deg);
+      box-shadow: inset -14px -8px 28px rgba(0,0,0,.56);
+    }
+
+    .torso::before {
+      position: absolute;
+      top: 2%;
+      left: -24%;
+      width: 92%;
+      height: 24%;
+      border-radius: 50%;
+      background: linear-gradient(90deg, #191a21, #3b3c45 55%, #171820);
+      transform: rotate(-3deg);
+      content: "";
+    }
+
+    .torso::after {
+      position: absolute;
+      left: 60%;
+      top: 9%;
+      width: 1px;
+      height: 76%;
+      background: linear-gradient(rgba(220, 205, 165, .24), transparent);
+      content: "";
+    }
+
+    .pelvis {
+      position: absolute;
+      z-index: 3;
+      top: 62%;
+      left: 48%;
+      width: 36%;
+      height: 15%;
+      border-radius: 38% 30% 45% 42%;
+      background: linear-gradient(115deg, #30313a, #111219 75%);
+      transform: translateX(-50%) rotate(-2deg);
+    }
+
+    .limb {
+      position: absolute;
+      border: 1px solid rgba(231, 228, 215, .055);
+      border-radius: 999px;
+      background: linear-gradient(100deg, #13141b, #34353e, #111219);
+      transform-origin: top center;
+      box-shadow: inset -6px -4px 12px rgba(0,0,0,.28);
+    }
+
+    .arm {
+      z-index: 4;
+      top: 32%;
+      width: 12%;
+      height: 31%;
+    }
+
+    .arm.one {
+      left: 31%;
+      transform: rotate(-14deg);
+    }
+
+    .arm.two {
+      left: 45%;
+      transform: rotate(-28deg);
+      filter: brightness(.82);
+    }
+
+    .forearm {
+      z-index: 5;
+      top: 53%;
+      width: 11%;
+      height: 27%;
+    }
+
+    .forearm::after {
+      position: absolute;
+      left: 50%;
+      bottom: -6%;
+      width: 132%;
+      aspect-ratio: .72;
+      border-radius: 48%;
+      background: #202129;
+      transform: translateX(-50%);
+      content: "";
+    }
+
+    .forearm.one {
+      left: 24%;
+      transform: rotate(21deg);
+    }
+
+    .forearm.two {
+      left: 29%;
+      transform: rotate(37deg);
+      filter: brightness(.84);
+    }
+
+    .leg {
+      z-index: 1;
+      top: 70%;
+      width: 16%;
+      height: 29%;
+    }
+
+    .leg.one {
+      left: 36%;
+      transform: rotate(5deg);
+    }
+
+    .leg.two {
+      left: 51%;
+      transform: rotate(-7deg);
+      filter: brightness(.82);
+    }
+
+    .combatant:not([disabled]):hover .portrait,
+    .combatant:not([disabled]):focus-visible .portrait {
+      transform: translateY(-7px) scale(1.015);
+      filter: brightness(1.18);
+    }
+
+    .combatant.active .portrait {
+      transform: translateY(-8px) scale(1.025);
+      filter: brightness(1.24);
+    }
+
+    .combatant.active .portrait::before {
+      border-color: rgba(239, 214, 157, .48);
+      box-shadow: inset 0 0 50px rgba(105, 79, 130, .11), 0 0 46px rgba(198, 167, 106, .12);
+    }
+
+    .turn-mark {
+      margin-top: 13px;
+      font-size: 0.65rem;
+      letter-spacing: .2em;
+      color: transparent;
+      transition: color .35s ease;
+    }
+
+    .active .turn-mark {
+      color: var(--gold-bright);
+    }
+
+    .center-seal {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .versus {
+      position: relative;
+      width: 78px;
+      height: 78px;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(198, 167, 106, .24);
+      border-radius: 50%;
+      font-family: Georgia, serif;
+      font-size: .75rem;
+      letter-spacing: .18em;
+      color: var(--gold);
+      transform: rotate(45deg);
+    }
+
+    .versus span {
+      transform: rotate(-45deg);
+    }
+
+    .center-copy {
+      margin: 0;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: clamp(.72rem, 1.3vw, .9rem);
+      letter-spacing: .22em;
+      color: #a6a297;
+      transition: opacity .35s ease;
+    }
+
+    .center-hint {
+      margin: 8px 0 0;
+      font-size: .62rem;
+      letter-spacing: .16em;
+      color: #5f5e5b;
+    }
+
+    .turn-panel {
+      position: relative;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: minmax(260px, .85fr) minmax(360px, 1.5fr) minmax(255px, .8fr);
+      gap: 18px;
+      max-height: 520px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(130deg, rgba(18,19,29,.94), rgba(9,10,16,.92));
+      box-shadow: 0 22px 70px rgba(0,0,0,.38), inset 0 1px rgba(255,255,255,.025);
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity .45s ease, transform .45s ease, max-height .55s ease, padding .55s ease, border-width .55s ease;
+    }
+
+    .turn-panel.hidden {
+      overflow: hidden;
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-width: 0;
+      opacity: 0;
+      transform: translateY(24px);
+      pointer-events: none;
+    }
+
+    .panel-section {
+      min-width: 0;
+      padding: 3px 4px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-heading h2,
+    .section-heading h3 {
+      margin: 0;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: .82rem;
+      font-weight: 400;
+      letter-spacing: .2em;
+      color: #d7d2c5;
+    }
+
+    .section-heading span {
+      font-size: .65rem;
+      letter-spacing: .12em;
+      color: var(--muted);
+    }
+
+    .resources {
+      border-right: 1px solid var(--line);
+    }
+
+    .resource {
+      margin-top: 14px;
+    }
+
+    .resource:first-of-type {
+      margin-top: 2px;
+    }
+
+    .resource-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 7px;
+      font-size: .68rem;
+      letter-spacing: .12em;
+      color: #a9a69e;
+    }
+
+    .resource-value {
+      font-family: Georgia, serif;
+      color: #e5e0d3;
+    }
+
+    .resource-track {
+      height: 5px;
+    }
+
+    .resource-fill {
+      height: 100%;
+      width: 100%;
+      transform-origin: left;
+      transition: width .35s ease;
+    }
+
+    .energy .resource-fill { background: var(--energy); box-shadow: 0 0 12px rgba(100,145,184,.35); }
+    .creation .resource-fill { background: var(--creation); box-shadow: 0 0 12px rgba(154,115,189,.35); }
+    .stamina .resource-fill { background: var(--stamina); box-shadow: 0 0 12px rgba(126,159,113,.35); }
+
+    .creation.flash .resource-track {
+      animation: creation-flash .62s ease;
+    }
+
+    .hand-section {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--line);
+    }
+
+    .hand {
+      flex: 1;
+      min-height: 126px;
+      display: grid;
+      grid-template-columns: repeat(8, minmax(34px, 1fr));
+      gap: 7px;
+      align-items: stretch;
+      padding-top: 18px;
+      margin-top: -18px;
+    }
+
+    .card,
+    .empty-slot {
+      min-width: 0;
+      min-height: 112px;
+      border-radius: 3px;
+    }
+
+    .empty-slot {
+      border: 1px dashed rgba(255,255,255,.09);
+      background: rgba(255,255,255,.012);
+    }
+
+    .card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 4px;
+      overflow: hidden;
+      border: 1px solid rgba(215, 212, 195, .22);
+      color: #c8c4b9;
+      background: linear-gradient(160deg, #252630, #121319 70%);
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+      cursor: pointer;
+      transition: transform .24s ease, border-color .24s ease, box-shadow .24s ease, filter .24s ease;
+    }
+
+    .card.new-card {
+      animation: card-arrive .34s ease both;
+    }
+
+    .card::before {
+      position: absolute;
+      inset: 5px;
+      border: 1px solid rgba(255,255,255,.055);
+      content: "";
+    }
+
+    .card.white {
+      border-color: rgba(215, 215, 207, .42);
+      background: linear-gradient(160deg, #292a30, #14151a 72%);
+    }
+
+    .card.green {
+      border-color: rgba(103, 151, 103, .65);
+      background: linear-gradient(160deg, #243229, #101813 72%);
+      box-shadow: 0 8px 18px rgba(0,0,0,.22), 0 0 13px rgba(94, 148, 94, .12);
+    }
+
+    .card.blue {
+      border-color: rgba(114,151,178,.48);
+      background: linear-gradient(160deg, #252d36, #11151b 70%);
+    }
+
+    .card.purple,
+    .card.magic {
+      border-color: rgba(162,116,190,.52);
+      background: linear-gradient(160deg, #30263a, #15111a 70%);
+    }
+
+    .card.gold {
+      border-color: rgba(218, 176, 82, .72);
+      background: linear-gradient(160deg, #39301d, #18140d 72%);
+      box-shadow: 0 8px 18px rgba(0,0,0,.22), 0 0 16px rgba(218,176,82,.14);
+    }
+
+    .card.red {
+      border-color: rgba(213, 66, 76, .78);
+      background: linear-gradient(160deg, #3b2025, #190d10 72%);
+      box-shadow: 0 8px 18px rgba(0,0,0,.22), 0 0 18px rgba(213,66,76,.17);
+    }
+
+    .card:hover,
+    .card:focus-visible {
+      border-color: rgba(239, 214, 157, .68);
+      box-shadow: 0 11px 24px rgba(0,0,0,.32), 0 0 17px rgba(198,167,106,.1);
+      outline: none;
+    }
+
+    .card.selected {
+      z-index: 4;
+      border-color: rgba(239, 214, 157, .88);
+      box-shadow: 0 18px 32px rgba(0,0,0,.42), 0 0 22px rgba(198,167,106,.24);
+      transform: translateY(-20px);
+      filter: brightness(1.16);
+    }
+
+    .card.playing {
+      pointer-events: none;
+      animation: card-play .28s ease forwards;
+    }
+
+    .card-tier {
+      position: relative;
+      z-index: 1;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: clamp(.48rem, .58vw, .56rem);
+      letter-spacing: .12em;
+      color: #77766f;
+      white-space: nowrap;
+    }
+
+    .card.green .card-tier { color: #7ea47d; }
+    .card.blue .card-tier { color: #7798b0; }
+    .card.purple .card-tier,
+    .card.magic .card-tier { color: #a984bd; }
+    .card.gold .card-tier { color: #d5ae55; }
+    .card.red .card-tier { color: #dc626a; }
+
+    .card-name {
+      position: relative;
+      z-index: 1;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: clamp(.58rem, .72vw, .7rem);
+      font-weight: 400;
+      letter-spacing: .08em;
+      white-space: nowrap;
+      color: #d8d4ca;
+    }
+
+    .empty-hand {
+      grid-column: 1 / -1;
+      align-self: center;
+      text-align: center;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: .75rem;
+      letter-spacing: .18em;
+      color: #595957;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .draw-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .odds-panel {
+      margin-top: 11px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+
+    .odds-panel + .odds-panel {
+      margin-top: 7px;
+      padding-top: 7px;
+    }
+
+    .odds-title {
+      margin: 0 0 8px;
+      font-size: .56rem;
+      letter-spacing: .14em;
+      color: #73726e;
+    }
+
+    details.odds-panel summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 0;
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    details.odds-panel summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.odds-panel summary::after {
+      content: "+";
+      font-size: .78rem;
+      color: #77766f;
+    }
+
+    details.odds-panel[open] summary {
+      margin-bottom: 8px;
+    }
+
+    details.odds-panel[open] summary::after {
+      content: "−";
+    }
+
+    .odds-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .odds-grid span {
+      padding: 3px 5px;
+      border: 1px solid rgba(255,255,255,.07);
+      font-size: .52rem;
+      letter-spacing: .04em;
+      color: #85837d;
+      background: rgba(255,255,255,.018);
+    }
+
+    .odds-grid .green-odds {
+      border-color: rgba(103,151,103,.2);
+      color: #789478;
+    }
+
+    .odds-grid .blue-odds {
+      border-color: rgba(114,151,178,.22);
+      color: #7798b0;
+    }
+
+    .odds-grid .purple-odds {
+      border-color: rgba(162,116,190,.24);
+      color: #a984bd;
+    }
+
+    .odds-grid .gold-odds {
+      border-color: rgba(218,176,82,.25);
+      color: #c8a754;
+    }
+
+    .odds-grid .red-odds {
+      border-color: rgba(213,66,76,.26);
+      color: #ce6068;
+    }
+
+    .odds-grid .instant-odds {
+      border-color: rgba(154,115,189,.22);
+      color: #9c80ad;
+    }
+
+    .draw-button,
+    .end-button {
+      border: 1px solid rgba(215, 212, 195, .16);
+      color: #c9c6bc;
+      background: rgba(255,255,255,.025);
+      cursor: pointer;
+      transition: border-color .25s ease, color .25s ease, background .25s ease, transform .25s ease;
+    }
+
+    .draw-button {
+      min-height: 66px;
+      padding: 9px 4px;
+      font-size: .7rem;
+      letter-spacing: .06em;
+    }
+
+    .draw-button small {
+      display: block;
+      margin-top: 6px;
+      font-family: Georgia, serif;
+      font-size: .58rem;
+      color: var(--muted);
+    }
+
+    .draw-button:hover:not(:disabled),
+    .draw-button:focus-visible,
+    .end-button:hover:not(:disabled),
+    .end-button:focus-visible {
+      border-color: rgba(239, 214, 157, .55);
+      color: #f1ead9;
+      background: rgba(198, 167, 106, .08);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
+    .draw-button:disabled,
+    .end-button:disabled {
+      opacity: .28;
+      cursor: not-allowed;
+    }
+
+    .action-note {
+      min-height: 34px;
+      margin: 12px 0;
+      font-size: .62rem;
+      line-height: 1.55;
+      letter-spacing: .08em;
+      color: #74736f;
+    }
+
+    .end-button {
+      min-height: 45px;
+      margin-top: auto;
+      border-color: rgba(198,167,106,.34);
+      font-family: Georgia, "Songti SC", serif;
+      font-size: .75rem;
+      letter-spacing: .2em;
+      color: var(--gold-bright);
+      background: linear-gradient(90deg, rgba(198,167,106,.04), rgba(198,167,106,.1), rgba(198,167,106,.04));
+    }
+
+    .round-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      background: rgba(4, 5, 9, .78);
+      backdrop-filter: blur(8px);
+      opacity: 1;
+      visibility: visible;
+      transition: opacity .38s ease, visibility .38s ease;
+    }
+
+    .round-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .round-message {
+      position: relative;
+      padding: 56px 80px;
+      text-align: center;
+    }
+
+    .round-message::before,
+    .round-message::after {
+      position: absolute;
+      left: 50%;
+      width: min(420px, 70vw);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      transform: translateX(-50%);
+      content: "";
+    }
+
+    .round-message::before { top: 24px; }
+    .round-message::after { bottom: 24px; }
+
+    .round-message span {
+      display: block;
+      margin-bottom: 10px;
+      font-size: .66rem;
+      letter-spacing: .4em;
+      color: var(--gold);
+    }
+
+    .round-message h2 {
+      margin: 0;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: clamp(2rem, 6vw, 4.8rem);
+      font-weight: 400;
+      letter-spacing: .2em;
+      color: #f0ecdf;
+      text-shadow: 0 0 38px rgba(239, 214, 157, .22);
+    }
+
+    @keyframes slow-turn {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes wandering-light {
+      to { transform: translateX(60%) skewX(-14deg); }
+    }
+
+    @keyframes card-arrive {
+      from { opacity: 0; transform: translateY(14px) scale(.94); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes card-play {
+      0% { opacity: 1; transform: translateY(-20px) scale(1); }
+      55% { opacity: .85; transform: translateY(-42px) scale(1.06); }
+      100% { opacity: 0; transform: translate(38px, -58px) scale(.76); filter: blur(3px); }
+    }
+
+    @keyframes creation-flash {
+      0%, 100% { box-shadow: inset 0 0 0 rgba(154,115,189,0); }
+      45% { box-shadow: inset 0 0 18px rgba(183,126,221,.48), 0 0 17px rgba(154,115,189,.34); }
+    }
+
+    @media (max-width: 980px) {
+      .game-shell { padding-bottom: 22px; }
+      .arena { min-height: 390px; grid-template-columns: 1fr 120px 1fr; }
+      .turn-panel { grid-template-columns: 1fr 1.7fr; }
+      .resources { border-right: 1px solid var(--line); }
+      .hand-section { border-right: 0; }
+      .actions { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 16px; }
+      .draw-actions { grid-template-columns: repeat(3, 1fr); }
+      .action-note { margin: 8px 0; }
+      .end-button { min-height: 42px; }
+    }
+
+    @media (max-width: 680px) {
+      .game-shell { padding: 18px 14px 20px; }
+      .topbar { grid-template-columns: 1fr auto; }
+      .brand { display: none; }
+      .title-block { text-align: left; }
+      .title-block h1 { letter-spacing: .2em; }
+      .arena { min-height: 355px; grid-template-columns: 1fr 62px 1fr; gap: 3px; padding: 28px 0; }
+      .identity { margin-bottom: 13px; }
+      .name-row { display: block; }
+      .health-number { display: block; margin-top: 4px; }
+      .portrait { width: 88%; }
+      .versus { width: 48px; height: 48px; }
+      .center-copy { font-size: .62rem; line-height: 1.8; }
+      .center-hint { display: none; }
+      .turn-panel { grid-template-columns: 1fr; gap: 14px; padding: 15px; }
+      .resources, .hand-section { border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+      .hand { grid-template-columns: repeat(4, 1fr); min-height: 240px; }
+      .actions { grid-column: auto; border-top: 0; }
+      .card, .empty-slot { min-height: 108px; }
+      .round-message { padding-inline: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Hello World</h1>
+  <main class="game-shell">
+    <header class="topbar">
+      <div class="brand">Veil · Duel</div>
+      <div class="title-block">
+        <h1>帷幕对决</h1>
+        <p>在沉默中，选择你的先手</p>
+      </div>
+      <div class="round-label" aria-live="polite">
+        <strong id="roundText">尚未开始</strong>
+        <span id="turnText">等待抉择</span>
+      </div>
+    </header>
+
+    <section class="arena" aria-label="对战区域">
+      <button class="combatant left" id="playerOne" type="button" data-player="0" aria-label="选择角色一作为先手">
+        <div class="identity">
+          <div class="name-row">
+            <span class="name">无名者 · 壹</span>
+            <span class="health-number">100 / 100</span>
+          </div>
+          <div class="health-track" aria-label="角色一生命值100">
+            <div class="health-fill"></div>
+          </div>
+        </div>
+        <div class="portrait" aria-hidden="true">
+          <div class="sigil-ring"></div>
+          <div class="figure">
+            <div class="head"></div>
+            <div class="neck"></div>
+            <div class="torso"></div>
+            <div class="pelvis"></div>
+            <div class="limb arm one"></div>
+            <div class="limb arm two"></div>
+            <div class="limb forearm one"></div>
+            <div class="limb forearm two"></div>
+            <div class="limb leg one"></div>
+            <div class="limb leg two"></div>
+          </div>
+        </div>
+        <div class="turn-mark">当前回合</div>
+      </button>
+
+      <div class="center-seal" aria-hidden="true">
+        <div class="versus"><span>VS</span></div>
+        <p class="center-copy" id="centerCopy">选择一位角色</p>
+        <p class="center-hint" id="centerHint">点击角色，开启第一回合</p>
+      </div>
+
+      <button class="combatant right" id="playerTwo" type="button" data-player="1" aria-label="选择角色二作为先手">
+        <div class="identity">
+          <div class="name-row">
+            <span class="name">无名者 · 贰</span>
+            <span class="health-number">100 / 100</span>
+          </div>
+          <div class="health-track" aria-label="角色二生命值100">
+            <div class="health-fill"></div>
+          </div>
+        </div>
+        <div class="portrait" aria-hidden="true">
+          <div class="sigil-ring"></div>
+          <div class="figure">
+            <div class="head"></div>
+            <div class="neck"></div>
+            <div class="torso"></div>
+            <div class="pelvis"></div>
+            <div class="limb arm one"></div>
+            <div class="limb arm two"></div>
+            <div class="limb forearm one"></div>
+            <div class="limb forearm two"></div>
+            <div class="limb leg one"></div>
+            <div class="limb leg two"></div>
+          </div>
+        </div>
+        <div class="turn-mark">当前回合</div>
+      </button>
+    </section>
+
+    <section class="turn-panel hidden" id="turnPanel" aria-label="当前角色回合面板">
+      <div class="panel-section resources">
+        <div class="section-heading">
+          <h2 id="activeName">无名者 · 壹</h2>
+          <span>角色状态</span>
+        </div>
+        <div class="resource energy">
+          <div class="resource-meta"><span>能量</span><span class="resource-value" id="energyValue">50 / 50</span></div>
+          <div class="resource-track"><div class="resource-fill" id="energyFill"></div></div>
+        </div>
+        <div class="resource creation" id="creationResource">
+          <div class="resource-meta"><span>创造</span><span class="resource-value" id="creationValue">10 / 10</span></div>
+          <div class="resource-track"><div class="resource-fill" id="creationFill"></div></div>
+        </div>
+        <div class="resource stamina">
+          <div class="resource-meta"><span>体力</span><span class="resource-value" id="staminaValue">25 / 25</span></div>
+          <div class="resource-track"><div class="resource-fill" id="staminaFill"></div></div>
+        </div>
+      </div>
+
+      <div class="panel-section hand-section">
+        <div class="section-heading">
+          <h3>卡牌区</h3>
+          <span id="handCount">0 / 8</span>
+        </div>
+        <div class="hand" id="hand" aria-label="当前角色卡牌区" aria-live="polite">
+          <div class="empty-hand">牌堆尚且沉寂</div>
+        </div>
+      </div>
+
+      <div class="panel-section actions">
+        <div class="section-heading">
+          <h3>抽取卡牌</h3>
+          <span>消耗创造</span>
+        </div>
+        <div class="draw-actions">
+          <button class="draw-button" type="button" data-card="basic" data-cost="1">基础牌<small>−1</small></button>
+          <button class="draw-button" type="button" data-card="advanced" data-cost="3">进阶牌<small>−3</small></button>
+          <button class="draw-button" type="button" data-card="magic" data-cost="4">魔法牌<small>−4</small></button>
+        </div>
+        <details class="odds-panel" aria-label="基础牌抽取概率">
+          <summary class="odds-title">基础牌概率</summary>
+          <div class="odds-grid">
+            <span>刺刀 25%</span>
+            <span>拳击 25%</span>
+            <span>移动 25%</span>
+            <span class="green-odds">警惕 10%</span>
+            <span class="green-odds">木盾 5%</span>
+            <span class="green-odds">衣裤 5%</span>
+            <span class="instant-odds">创造 +4&nbsp; 5%</span>
+          </div>
+        </details>
+        <details class="odds-panel" aria-label="进阶牌抽取概率">
+          <summary class="odds-title">进阶牌概率 · 22项</summary>
+          <div class="odds-grid">
+            <span>刺刀 15%</span>
+            <span>流血 20%</span>
+            <span class="green-odds">闪避 10%</span>
+            <span class="green-odds">挥砍 13%</span>
+            <span class="green-odds">警惕 9%</span>
+            <span class="green-odds">木盾 4%</span>
+            <span class="green-odds">衣裤 4%</span>
+            <span class="blue-odds">能量药水 10%</span>
+            <span class="blue-odds">肉 4%</span>
+            <span class="purple-odds">毒液 1.5%</span>
+            <span class="purple-odds">生命药水 3.1%</span>
+            <span class="purple-odds">护甲 2%</span>
+            <span class="purple-odds">卫队盾牌 2%</span>
+            <span class="gold-odds">幸运 0.5%</span>
+            <span class="gold-odds">不幸 0.6%</span>
+            <span class="gold-odds">厄运 0.3%</span>
+            <span class="gold-odds">灾厄 0.1%</span>
+            <span class="gold-odds">战神护甲 0.3%</span>
+            <span class="gold-odds">守卫者盾牌 0.3%</span>
+            <span class="gold-odds">死神镰刀 0.15%</span>
+            <span class="red-odds">彩弹礼盒 0.05%</span>
+            <span class="instant-odds">回满创造 0.1%</span>
+          </div>
+        </details>
+        <p class="action-note" id="actionNote" aria-live="polite">每位角色最多持有八张牌。</p>
+        <button class="end-button" id="endTurn" type="button">结束回合</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="round-overlay hidden" id="roundOverlay" role="status" aria-live="assertive">
+    <div class="round-message">
+      <span id="overlayRound">ROUND 02</span>
+      <h2>开始新回合</h2>
+    </div>
+  </div>
+
+  <script>
+    const MAX = Object.freeze({ energy: 50, creation: 10, stamina: 25, cards: 8 });
+    const names = ["无名者 · 壹", "无名者 · 贰"];
+    const BASIC_CARD_POOL = Object.freeze([
+      { chance: 25, name: "刺刀", tier: "white", type: "basic" },
+      { chance: 25, name: "拳击", tier: "white", type: "basic" },
+      { chance: 25, name: "移动", tier: "white", type: "basic" },
+      { chance: 10, name: "警惕", tier: "green", type: "basic" },
+      { chance: 5, name: "木盾", tier: "green", type: "basic" },
+      { chance: 5, name: "衣裤", tier: "green", type: "basic" },
+      { chance: 5, name: "创造回响", tier: "instant", type: "creation-add" }
+    ]);
+    const ADVANCED_CARD_POOL = Object.freeze([
+      { chance: 15, name: "刺刀", tier: "white", type: "advanced" },
+      { chance: 20, name: "流血", tier: "white", type: "advanced" },
+      { chance: 10, name: "闪避", tier: "green", type: "advanced" },
+      { chance: 13, name: "挥砍", tier: "green", type: "advanced" },
+      { chance: 9, name: "警惕", tier: "green", type: "advanced" },
+      { chance: 4, name: "木盾", tier: "green", type: "advanced" },
+      { chance: 4, name: "衣裤", tier: "green", type: "advanced" },
+      { chance: 10, name: "能量药水", tier: "blue", type: "advanced" },
+      { chance: 4, name: "肉", tier: "blue", type: "advanced" },
+      { chance: 1.5, name: "毒液", tier: "purple", type: "advanced" },
+      { chance: 3.1, name: "生命药水", tier: "purple", type: "advanced" },
+      { chance: 2, name: "护甲", tier: "purple", type: "advanced" },
+      { chance: 2, name: "卫队盾牌", tier: "purple", type: "advanced" },
+      { chance: 0.5, name: "幸运", tier: "gold", type: "advanced" },
+      { chance: 0.6, name: "不幸", tier: "gold", type: "advanced" },
+      { chance: 0.3, name: "厄运", tier: "gold", type: "advanced" },
+      { chance: 0.1, name: "灾厄", tier: "gold", type: "advanced" },
+      { chance: 0.3, name: "战神护甲", tier: "gold", type: "advanced" },
+      { chance: 0.3, name: "守卫者盾牌", tier: "gold", type: "advanced" },
+      { chance: 0.15, name: "死神镰刀", tier: "gold", type: "advanced" },
+      { chance: 0.05, name: "彩弹礼盒", tier: "red", type: "advanced" },
+      { chance: 0.1, name: "回满创造", tier: "instant", type: "creation-full" }
+    ]);
+    const GENERIC_CARDS = Object.freeze({
+      magic: { name: "通用魔法牌", tier: "magic", type: "magic" }
+    });
+    const players = [createPlayer(), createPlayer()];
+
+    let activePlayer = null;
+    let firstPlayer = null;
+    let round = 0;
+    let turnsEnded = 0;
+    let transitioning = false;
+    let selectedCardId = null;
+    let newestCardId = null;
+    let nextCardId = 1;
+
+    const combatants = [...document.querySelectorAll(".combatant")];
+    const turnPanel = document.getElementById("turnPanel");
+    const activeName = document.getElementById("activeName");
+    const roundText = document.getElementById("roundText");
+    const turnText = document.getElementById("turnText");
+    const centerCopy = document.getElementById("centerCopy");
+    const centerHint = document.getElementById("centerHint");
+    const energyValue = document.getElementById("energyValue");
+    const creationValue = document.getElementById("creationValue");
+    const staminaValue = document.getElementById("staminaValue");
+    const energyFill = document.getElementById("energyFill");
+    const creationFill = document.getElementById("creationFill");
+    const staminaFill = document.getElementById("staminaFill");
+    const creationResource = document.getElementById("creationResource");
+    const hand = document.getElementById("hand");
+    const handCount = document.getElementById("handCount");
+    const actionNote = document.getElementById("actionNote");
+    const drawButtons = [...document.querySelectorAll(".draw-button")];
+    const endTurnButton = document.getElementById("endTurn");
+    const roundOverlay = document.getElementById("roundOverlay");
+    const overlayRound = document.getElementById("overlayRound");
+
+    function createPlayer() {
+      return { health: 100, energy: 50, creation: 10, stamina: 25, cards: [] };
+    }
+
+    function selectFirstPlayer(event) {
+      if (firstPlayer !== null) return;
+
+      firstPlayer = Number(event.currentTarget.dataset.player);
+      activePlayer = firstPlayer;
+      round = 1;
+
+      combatants.forEach((combatant) => {
+        combatant.disabled = true;
+        combatant.removeAttribute("aria-label");
+      });
+
+      turnPanel.classList.remove("hidden");
+      centerHint.textContent = "双方的命运已被决定";
+      startTurn(false);
+    }
+
+    function startTurn(restore = true) {
+      const player = players[activePlayer];
+      selectedCardId = null;
+      if (restore) {
+        player.creation = MAX.creation;
+        player.stamina = MAX.stamina;
+        player.energy = Math.min(MAX.energy, player.energy + 5);
+      }
+      actionNote.textContent = "每位角色最多持有八张牌。";
+      render();
+    }
+
+    function pickWeightedOutcome(pool, randomValue = Math.random()) {
+      const roll = Math.min(Math.max(randomValue, 0), 0.999999999) * 100;
+      let cumulativeChance = 0;
+
+      for (const outcome of pool) {
+        cumulativeChance += outcome.chance;
+        if (roll < cumulativeChance) return outcome;
+      }
+
+      return pool[pool.length - 1];
+    }
+
+    function pickBasicOutcome(randomValue) {
+      return pickWeightedOutcome(BASIC_CARD_POOL, randomValue);
+    }
+
+    function pickAdvancedOutcome(randomValue) {
+      return pickWeightedOutcome(ADVANCED_CARD_POOL, randomValue);
+    }
+
+    function createCard(cardDefinition) {
+      return { id: `card-${nextCardId++}`, ...cardDefinition };
+    }
+
+    function drawCard(event) {
+      if (transitioning || activePlayer === null) return;
+
+      const button = event.currentTarget;
+      const type = button.dataset.card;
+      const cost = Number(button.dataset.cost);
+      const player = players[activePlayer];
+      selectedCardId = null;
+
+      if (player.cards.length >= MAX.cards) {
+        actionNote.textContent = "卡牌区已满，无法继续抽取。";
+        renderHand(player);
+        return;
+      }
+      if (player.creation < cost) {
+        actionNote.textContent = "创造不足，无法抽取这张牌。";
+        renderHand(player);
+        return;
+      }
+
+      player.creation -= cost;
+
+      const outcome = type === "basic"
+        ? pickBasicOutcome()
+        : type === "advanced"
+          ? pickAdvancedOutcome()
+          : GENERIC_CARDS.magic;
+
+      if (outcome.type === "creation-add") {
+        player.creation = Math.min(MAX.creation, player.creation + 4);
+        actionNote.textContent = "抽中了创造回响，创造增加4点。";
+        flashCreationBar();
+        render();
+        return;
+      }
+
+      if (outcome.type === "creation-full") {
+        player.creation = MAX.creation;
+        actionNote.textContent = "抽中了回满创造，创造已恢复至10点。";
+        flashCreationBar();
+        render();
+        return;
+      }
+
+      const card = createCard(outcome);
+      player.cards.push(card);
+      newestCardId = card.id;
+      actionNote.textContent = `已抽取一张${card.name}。`;
+
+      render();
+      newestCardId = null;
+    }
+
+    function handleHandClick(event) {
+      if (transitioning || activePlayer === null) return;
+      const cardElement = event.target.closest(".card");
+      if (!cardElement) return;
+
+      const cardId = cardElement.dataset.cardId;
+      const player = players[activePlayer];
+      const card = player.cards.find((item) => item.id === cardId);
+      if (!card) return;
+
+      if (selectedCardId === cardId) {
+        playCard(player, card, cardElement);
+        return;
+      }
+
+      selectedCardId = cardId;
+      actionNote.textContent = `已选中${card.name}，再次点击即可打出。`;
+      renderHand(player);
+    }
+
+    function playCard(player, card, cardElement) {
+      const cardIndex = player.cards.findIndex((item) => item.id === card.id);
+      if (cardIndex === -1) return;
+
+      player.cards.splice(cardIndex, 1);
+      selectedCardId = null;
+      cardElement.classList.remove("selected");
+      cardElement.classList.add("playing");
+      cardElement.setAttribute("aria-pressed", "false");
+      handCount.textContent = `${player.cards.length} / ${MAX.cards}`;
+      actionNote.textContent = `已打出一张${card.name}。`;
+      updateButtons(player);
+
+      window.setTimeout(() => {
+        if (activePlayer !== null) render();
+      }, 280);
+    }
+
+    function cancelCardSelection(announce = false) {
+      if (selectedCardId === null || activePlayer === null) return;
+      selectedCardId = null;
+      if (announce) actionNote.textContent = "已取消卡牌选择。";
+      renderHand(players[activePlayer]);
+    }
+
+    function handleOutsideClick(event) {
+      if (selectedCardId === null) return;
+      if (event.target.closest(".card, .draw-button, .end-button")) return;
+      cancelCardSelection(true);
+    }
+
+    function flashCreationBar() {
+      creationResource.classList.remove("flash");
+      void creationResource.offsetWidth;
+      creationResource.classList.add("flash");
+      window.setTimeout(() => creationResource.classList.remove("flash"), 620);
+    }
+
+    function endTurn() {
+      if (transitioning || activePlayer === null) return;
+
+      selectedCardId = null;
+      turnsEnded += 1;
+      if (turnsEnded < 2) {
+        activePlayer = activePlayer === 0 ? 1 : 0;
+        startTurn();
+        return;
+      }
+
+      transitioning = true;
+      endTurnButton.disabled = true;
+      drawButtons.forEach((button) => { button.disabled = true; });
+      round += 1;
+      overlayRound.textContent = `ROUND ${String(round).padStart(2, "0")}`;
+      roundOverlay.classList.remove("hidden");
+
+      window.setTimeout(() => {
+        turnsEnded = 0;
+        activePlayer = firstPlayer;
+        transitioning = false;
+        roundOverlay.classList.add("hidden");
+        startTurn();
+      }, 1500);
+    }
+
+    function render() {
+      if (activePlayer === null) return;
+      const player = players[activePlayer];
+
+      combatants.forEach((combatant, index) => {
+        combatant.classList.toggle("active", index === activePlayer);
+      });
+
+      activeName.textContent = names[activePlayer];
+      roundText.textContent = `第 ${String(round).padStart(2, "0")} 轮`;
+      turnText.textContent = `${names[activePlayer]}的回合`;
+      centerCopy.textContent = names[activePlayer];
+
+      energyValue.textContent = `${player.energy} / ${MAX.energy}`;
+      creationValue.textContent = `${player.creation} / ${MAX.creation}`;
+      staminaValue.textContent = `${player.stamina} / ${MAX.stamina}`;
+      energyFill.style.width = `${player.energy / MAX.energy * 100}%`;
+      creationFill.style.width = `${player.creation / MAX.creation * 100}%`;
+      staminaFill.style.width = `${player.stamina / MAX.stamina * 100}%`;
+
+      renderHand(player);
+      updateButtons(player);
+    }
+
+    function getTierLabel(card) {
+      if (card.tier === "white") return "白卡";
+      if (card.tier === "green") return "绿卡";
+      if (card.tier === "blue") return "蓝卡";
+      if (card.tier === "purple") return "紫卡";
+      if (card.tier === "gold") return "金卡";
+      if (card.tier === "red") return "红卡";
+      if (card.tier === "magic") return "魔法";
+      return "卡牌";
+    }
+
+    function renderHand(player) {
+      hand.replaceChildren();
+      if (player.cards.length === 0) {
+        const message = document.createElement("div");
+        message.className = "empty-hand";
+        message.textContent = "牌堆尚且沉寂";
+        hand.appendChild(message);
+      } else {
+        player.cards.forEach((cardData) => {
+          const card = document.createElement("button");
+          const isSelected = cardData.id === selectedCardId;
+          const isNew = cardData.id === newestCardId;
+          card.type = "button";
+          card.className = `card ${cardData.tier}${isSelected ? " selected" : ""}${isNew ? " new-card" : ""}`;
+          card.dataset.cardId = cardData.id;
+          card.setAttribute("aria-pressed", String(isSelected));
+          card.setAttribute("aria-label", `${cardData.name}，${getTierLabel(cardData)}${isSelected ? "，已选中，再次点击打出" : ""}`);
+
+          const tier = document.createElement("span");
+          tier.className = "card-tier";
+          tier.textContent = getTierLabel(cardData);
+
+          const name = document.createElement("strong");
+          name.className = "card-name";
+          name.textContent = cardData.name;
+
+          card.append(tier, name);
+          hand.appendChild(card);
+        });
+
+        for (let index = player.cards.length; index < MAX.cards; index += 1) {
+          const slot = document.createElement("div");
+          slot.className = "empty-slot";
+          slot.setAttribute("aria-hidden", "true");
+          hand.appendChild(slot);
+        }
+      }
+      handCount.textContent = `${player.cards.length} / ${MAX.cards}`;
+    }
+
+    function updateButtons(player) {
+      const handIsFull = player.cards.length >= MAX.cards;
+      drawButtons.forEach((button) => {
+        const cost = Number(button.dataset.cost);
+        button.disabled = transitioning || handIsFull || player.creation < cost;
+      });
+      endTurnButton.disabled = transitioning;
+    }
+
+    combatants.forEach((combatant) => combatant.addEventListener("click", selectFirstPlayer));
+    drawButtons.forEach((button) => button.addEventListener("click", drawCard));
+    hand.addEventListener("click", handleHandClick);
+    endTurnButton.addEventListener("click", endTurn);
+    document.addEventListener("click", handleOutsideClick);
+  </script>
 </body>
 </html>
