@@ -1236,6 +1236,31 @@
             <span class="instant-odds">回满创造 0.1%</span>
           </div>
         </details>
+        <details class="odds-panel" aria-label="魔法牌抽取概率">
+          <summary class="odds-title">魔法牌概率 · 20项</summary>
+          <div class="odds-grid">
+            <span class="green-odds">能量球 15%</span>
+            <span class="green-odds">加速休整 9%</span>
+            <span class="green-odds">召唤地刺 6%</span>
+            <span class="blue-odds">能量护盾 8%</span>
+            <span class="blue-odds">火球术 10%</span>
+            <span class="blue-odds">冰球术 10%</span>
+            <span class="blue-odds">荆棘术 4%</span>
+            <span class="blue-odds">召唤骷髅 7%</span>
+            <span class="blue-odds">治疗术 6%</span>
+            <span class="blue-odds">锋利武器 4.8%</span>
+            <span class="purple-odds">魔法毒蛇 3%</span>
+            <span class="purple-odds">召唤火精灵 4%</span>
+            <span class="purple-odds">召唤水精灵 4%</span>
+            <span class="purple-odds">附魔武器 2%</span>
+            <span class="gold-odds">能量冲击波 2.2%</span>
+            <span class="gold-odds">召唤石傀儡 2%</span>
+            <span class="gold-odds">召唤闪电 1.1%</span>
+            <span class="gold-odds">复活 0.4%</span>
+            <span class="gold-odds">阿瓦达索命 0.1%</span>
+            <span class="gold-odds">半个U盘 1.4%</span>
+          </div>
+        </details>
         <p class="action-note" id="actionNote" aria-live="polite">每位角色最多持有八张牌。</p>
         <button class="end-button" id="endTurn" type="button">结束回合</button>
       </div>
@@ -1285,9 +1310,28 @@
       { chance: 0.05, name: "彩弹礼盒", tier: "red", type: "advanced" },
       { chance: 0.1, name: "回满创造", tier: "instant", type: "creation-full" }
     ]);
-    const GENERIC_CARDS = Object.freeze({
-      magic: { name: "通用魔法牌", tier: "magic", type: "magic" }
-    });
+    const MAGIC_CARD_POOL = Object.freeze([
+      { chance: 15, name: "能量球", tier: "green", type: "magic" },
+      { chance: 9, name: "加速休整", tier: "green", type: "magic" },
+      { chance: 6, name: "召唤地刺", tier: "green", type: "magic" },
+      { chance: 8, name: "能量护盾", tier: "blue", type: "magic" },
+      { chance: 10, name: "火球术", tier: "blue", type: "magic" },
+      { chance: 10, name: "冰球术", tier: "blue", type: "magic" },
+      { chance: 4, name: "荆棘术", tier: "blue", type: "magic" },
+      { chance: 7, name: "召唤骷髅", tier: "blue", type: "magic" },
+      { chance: 6, name: "治疗术", tier: "blue", type: "magic" },
+      { chance: 4.8, name: "锋利武器", tier: "blue", type: "magic" },
+      { chance: 3, name: "魔法毒蛇", tier: "purple", type: "magic" },
+      { chance: 4, name: "召唤火精灵", tier: "purple", type: "magic" },
+      { chance: 4, name: "召唤水精灵", tier: "purple", type: "magic" },
+      { chance: 2, name: "附魔武器", tier: "purple", type: "magic" },
+      { chance: 2.2, name: "能量冲击波", tier: "gold", type: "magic" },
+      { chance: 2, name: "召唤石傀儡", tier: "gold", type: "magic" },
+      { chance: 1.1, name: "召唤闪电", tier: "gold", type: "magic" },
+      { chance: 0.4, name: "复活", tier: "gold", type: "magic" },
+      { chance: 0.1, name: "阿瓦达索命", tier: "gold", type: "magic" },
+      { chance: 1.4, name: "半个U盘", tier: "gold", type: "magic" }
+    ]);
     const players = [createPlayer(), createPlayer()];
 
     let activePlayer = null;
@@ -1374,6 +1418,10 @@
       return pickWeightedOutcome(ADVANCED_CARD_POOL, randomValue);
     }
 
+    function pickMagicOutcome(randomValue) {
+      return pickWeightedOutcome(MAGIC_CARD_POOL, randomValue);
+    }
+
     function createCard(cardDefinition) {
       return { id: `card-${nextCardId++}`, ...cardDefinition };
     }
@@ -1404,7 +1452,7 @@
         ? pickBasicOutcome()
         : type === "advanced"
           ? pickAdvancedOutcome()
-          : GENERIC_CARDS.magic;
+          : pickMagicOutcome();
 
       if (outcome.type === "creation-add") {
         player.creation = Math.min(MAX.creation, player.creation + 4);
